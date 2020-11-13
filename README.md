@@ -1,3 +1,3 @@
 # OpenCustomizationSelector
 
-Contains RAW decompiled source
+Contains formatted code
