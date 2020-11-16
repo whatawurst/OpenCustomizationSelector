@@ -25,6 +25,8 @@ public class CustomizationSelectorActivity extends Activity implements OnClickLi
     private Configurator mConfigurator;
     private UserPresentReceiver mUserPresentReceiver;
 
+    private boolean isRebootRequired = false;
+
     private void disableActivity() {
         getPackageManager().setComponentEnabledSetting(new ComponentName(this, CustomizationSelectorActivity.class),
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.COMPONENT_ENABLED_STATE_ENABLED);
@@ -54,8 +56,10 @@ public class CustomizationSelectorActivity extends Activity implements OnClickLi
     public void onClick(DialogInterface dialogInterface, int i) {
         CSLog.d(TAG, "onClick - Reboot");
         disableActivity();
-        mConfigurator.set();
-        mConfigurator.saveConfigurationKey();
+        if (!isRebootRequired) {
+            mConfigurator.set();
+            mConfigurator.saveConfigurationKey();
+        }
         Log.i(getString(R.string.app_name), getString(R.string.customization_restart_desc_txt));
         (getSystemService(PowerManager.class)).reboot(getString(R.string.reboot_reason));
     }
@@ -74,7 +78,15 @@ public class CustomizationSelectorActivity extends Activity implements OnClickLi
             return;
         }
 
-        mConfigurator.reApplyModem();
+        // If reboot required
+        if (!mConfigurator.reApplyModem()) {
+            isRebootRequired = true;
+            disableUI();
+            setFinishOnTouchOutside(false);
+            setupUserPresent();
+            startDialog();
+            return;
+        }
 
         disableActivity();
         Intent intent = new Intent();

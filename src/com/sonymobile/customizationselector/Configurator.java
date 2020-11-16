@@ -1,6 +1,7 @@
 package com.sonymobile.customizationselector;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.PersistableBundle;
 import android.os.SystemProperties;
 import android.telephony.TelephonyManager;
@@ -129,7 +130,9 @@ public class Configurator {
         }
     }
 
-    public void reApplyModem() {
+    public boolean reApplyModem() {
+        SharedPreferences preferences = getTargetContext().getSharedPreferences(PREF_PKG, Context.MODE_PRIVATE);
+
         // Since the functions are re-executed, the checks aren't required again
         try {
             MiscTA.write(TA_FOTA_INTERNAL, "".getBytes(StandardCharsets.UTF_8));
@@ -142,8 +145,7 @@ public class Configurator {
             CSLog.d(TAG, "reApplyModem - Re-writing 2405");
 
             // Store preference without checks - ModemConfiguration:75
-            getTargetContext().getSharedPreferences(PREF_PKG, Context.MODE_PRIVATE)
-                    .edit().putString(ModemConfiguration.SAVED_MODEM_CONFIG, mModem).apply();
+            preferences.edit().putString(ModemConfiguration.SAVED_MODEM_CONFIG, mModem).apply();
 
             // Way of writing to Misc TA - ModemSwitcher:226
             if (ModemSwitcher.writeModemToMiscTA(new File(mModem).getName())) {
@@ -153,6 +155,14 @@ public class Configurator {
             }
         } else {
             CSLog.e(TAG, "reApplyModem - Modem is empty !");
+        }
+
+        if (preferences.getBoolean("first_boot_cs", true)) {
+            // First boot is true, apply false
+            preferences.edit().putBoolean("first_boot_cs", false).apply();
+            return false;   // reboot required
+        } else {
+            return true;
         }
     }
 }
