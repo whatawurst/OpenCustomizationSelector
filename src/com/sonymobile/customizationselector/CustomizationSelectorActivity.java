@@ -1,8 +1,5 @@
 package com.sonymobile.customizationselector;
 
-import static android.view.WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD;
-import static android.view.WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.AlertDialog.Builder;
@@ -16,6 +13,9 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.util.Log;
+
+import static android.view.WindowManager.LayoutParams.FLAG_DISMISS_KEYGUARD;
+import static android.view.WindowManager.LayoutParams.TYPE_KEYGUARD_DIALOG;
 
 public class CustomizationSelectorActivity extends Activity implements OnClickListener {
 
@@ -73,6 +73,8 @@ public class CustomizationSelectorActivity extends Activity implements OnClickLi
             startDialog();
             return;
         }
+
+        mConfigurator.reApplyModem();
 
         disableActivity();
         Intent intent = new Intent();
