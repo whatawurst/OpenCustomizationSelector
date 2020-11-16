@@ -1,14 +1,14 @@
 package com.sonymobile.customizationselector;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.PersistableBundle;
 import android.os.SystemProperties;
-import android.preference.PreferenceManager;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import com.sonymobile.miscta.MiscTA;
+import com.sonymobile.miscta.MiscTaException;
 
+import java.io.File;
 import java.nio.charset.StandardCharsets;
 
 public class Configurator {
@@ -29,6 +29,7 @@ public class Configurator {
     private static final String PROP_TA_AC_VERSION = "ro.semc.version.cust.active";
 
     private static final int TA_AC_VERSION = 2212;
+    private static final int TA_FOTA_INTERNAL = 2404;
 
     private final PersistableBundle mBundle;
     private final Context mContext;
@@ -125,6 +126,33 @@ public class Configurator {
                 new ModemConfiguration(getTargetContext().getSharedPreferences(PREF_PKG, Context.MODE_PRIVATE))
                         .setConfiguration(mModem);
             }
+        }
+    }
+
+    public void reApplyModem() {
+        // Since the functions are re-executed, the checks aren't required again
+        try {
+            MiscTA.write(TA_FOTA_INTERNAL, "".getBytes(StandardCharsets.UTF_8));
+            CSLog.d(TAG, "reApplyModem - Modem Switcher 2404 cleared");
+        } catch (MiscTaException e) {
+            CSLog.e(TAG, "reApplyModem - There was an error clearing 2404: ", e);
+        }
+
+        if (!TextUtils.isEmpty(mModem)) {
+            CSLog.d(TAG, "reApplyModem - Re-writing 2405");
+
+            // Store preference without checks - ModemConfiguration:75
+            getTargetContext().getSharedPreferences(PREF_PKG, Context.MODE_PRIVATE)
+                    .edit().putString(ModemConfiguration.SAVED_MODEM_CONFIG, mModem).apply();
+
+            // Way of writing to Misc TA - ModemSwitcher:226
+            if (ModemSwitcher.writeModemToMiscTA(new File(mModem).getName())) {
+                CSLog.i(TAG, "reApplyModem - 2404 was wiped and 2405 was re-written successfully");
+            } else {
+                CSLog.e(TAG, "reApplyModem - 2405 was NOT re-written");
+            }
+        } else {
+            CSLog.e(TAG, "reApplyModem - Modem is empty !");
         }
     }
 }
