@@ -70,22 +70,24 @@ public class CustomizationSelectorActivity extends Activity implements OnClickLi
         CSLog.d(TAG, "onCreate()");
         mConfigurator = new Configurator(this, CommonUtil.getCarrierBundle(this));
 
-        if (CommonUtil.isSIMLoaded(this, CommonUtil.getDefaultSubId(this)) && mConfigurator.isNewConfigurationNeeded()) {
-            disableUI();
-            setFinishOnTouchOutside(false);
-            setupUserPresent();
-            startDialog();
-            return;
-        }
+        if (CommonUtil.isSIMLoaded(this, CommonUtil.getDefaultSubId(this))) {
+            if (mConfigurator.isNewConfigurationNeeded()) {
+                disableUI();
+                setFinishOnTouchOutside(false);
+                setupUserPresent();
+                startDialog();
+                return;
+            }
 
-        // If reboot required
-        if (!mConfigurator.reApplyModem()) {
-            isRebootRequired = true;
-            disableUI();
-            setFinishOnTouchOutside(false);
-            setupUserPresent();
-            startDialog();
-            return;
+            // If reboot required
+            if (!mConfigurator.reApplyModem()) {
+                isRebootRequired = true;
+                disableUI();
+                setFinishOnTouchOutside(false);
+                setupUserPresent();
+                startDialog();
+                return;
+            }
         }
 
         disableActivity();

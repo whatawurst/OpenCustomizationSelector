@@ -141,8 +141,9 @@ public class Configurator {
             CSLog.e(TAG, "reApplyModem - There was an error clearing 2404: ", e);
         }
 
+        mModem = evaluateModem(mBundle.getString(KEY_MODEM, ""));
         if (!TextUtils.isEmpty(mModem)) {
-            CSLog.d(TAG, "reApplyModem - Re-writing 2405");
+            CSLog.d(TAG, "reApplyModem - Re-writing 2405 with modem " + mModem);
 
             // Store preference without checks - ModemConfiguration:75
             preferences.edit().putString(ModemConfiguration.SAVED_MODEM_CONFIG, mModem).apply();
@@ -154,7 +155,7 @@ public class Configurator {
                 CSLog.e(TAG, "reApplyModem - 2405 was NOT re-written");
             }
         } else {
-            CSLog.e(TAG, "reApplyModem - Modem is empty !");
+            CSLog.e(TAG, "reApplyModem - Modem is empty !: " + mModem);
         }
 
         if (preferences.getBoolean("first_boot_cs", true)) {
